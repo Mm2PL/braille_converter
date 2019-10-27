@@ -16,7 +16,9 @@ p.add_argument('-b', '--binary', action='store_true', dest='binary', help='Don\'
                                                                           'pixel')
 p.add_argument('--not-full', action='store_true', dest='not_full', help='Avoid using full characters')
 p.add_argument('-nf', '--no-flush', action='store_true', dest='nf')
-p.add_argument('--ignore-max-pixels', action='store_true', dest='no_max', help='Ignore maximum amount of pixels.')
+p.add_argument('--ignore-max-pixels', action='store_true', dest='no_max', help='Ignore maximum amount of pixels. '
+                                                                               'USE WITH CAUTION, YOU CAN CRASH '
+                                                                               'YOUR SYSTEM WITH THIS')
 
 p.add_argument('--output', dest='output', help='output, duh')
 args = p.parse_args()
@@ -53,14 +55,14 @@ else:
 
 img = img.convert('LA')
 if args.verbose:
-    print('Converted image to {0}X{1} or {2:.2f}% area, {3:.2f}% of X, {4:.2f}% of Y of the original size.'
-          ''.format(img.width,
-                    img.height,
-                    ((img.width * img.height)
-                     / (org_size[0] * org_size[1])
-                     * 100),
-                    (img.width / org_size[0] * 100),
-                    (img.height / org_size[1] * 100)))
+    percent_area = ((img.width * img.height)
+                    / (org_size[0] * org_size[1])
+                    * 100)
+    percent_x = (img.width / org_size[0] * 100)
+    percent_y = (img.height / org_size[1] * 100)
+    print(f'Converted image to {img.width}X{img.height} or {percent_area:.2f}% area, '
+          f'{percent_x:.2f}% of X, {percent_y:.2f}% of Y of the original size.')
+
 output = ''
 dots = []
 
@@ -68,12 +70,10 @@ dots = []
 def divide_image(image, max_size):
     offset = (0, 0)
     output = []
-    # Podziel po x
     for y in range(math.ceil(image.height / max_size[1])):
         for x in range(math.ceil(image.width / max_size[0])):
             curr_img = image.crop(box=(offset[0], offset[1], offset[0] + max_size[0], offset[1] + max_size[1]))
             output.append([offset, curr_img])
-            # curr_img.show()
             offset = (offset[0] + max_size[0], offset[1])
         offset = (0, offset[1] + max_size[1])
         output.append([offset, '\n'])
